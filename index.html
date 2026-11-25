@@ -233,3 +233,26 @@ jobs:
           git add -A
           git diff --quiet && git diff --staged --quiet || git commit -m "Auto-compress images and minify code"
           git push
+// Cap pixel ratio at 1.5 so high-res phone screens don't lag
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+renderer.shadowMap.enabled = false;
+// Helper to load heavy 3D scripts ONLY when a file is selected
+function loadScript(url) {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${url}"]`)) return resolve();
+    const s = document.createElement('script');
+    s.src = url;
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+// Call this inside your file-upload / drag-and-drop handler:
+async function handle3DFileUpload(file) {
+  // Only downloads Three.js & loaders AFTER user picks a file
+  await loadScript('https://jsdelivr.net');
+  // Now parse and render the 3D model
+}
+<!-- Add 'defer' to every external script tag -->
+<script src="https://cloudflare.com" defer></script>
