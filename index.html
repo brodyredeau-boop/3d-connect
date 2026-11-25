@@ -179,3 +179,14 @@
       "Bambu Lab": [
         { name: "A1 Mini", size: 180 },
         { name: "A1", size: 256 },
+import React, { lazy, Suspense } from 'react';
+
+const HeavyChart = lazy(() => import('./HeavyChart'));
+
+export default function Dashboard() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <HeavyChart />
+    </Suspense>
+  );
+}
