@@ -256,3 +256,63 @@ async function handle3DFileUpload(file) {
 }
 <!-- Add 'defer' to every external script tag -->
 <script src="https://cloudflare.com" defer></script>
+const CACHE_NAME = "gh-app-v1";
+const FILES_TO_CACHE = [
+  "./",
+  "./index.html",
+  "./styles.css",
+  "./app.js"
+];
+
+// Save core files on first visit
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(FILES_TO_CACHE))
+  );
+  self.skipWaiting();
+});
+
+// Serve cached files immediately, update in background
+self.addEventListener("fetch", (event) => {
+  event.respondWith(
+    caches.match(event.request).then((cachedResponse) => {
+      const fetchPromise = fetch(event.request).then((networkResponse) => {
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, networkResponse.clone());
+        });
+        return networkResponse;
+      });
+      return cachedResponse || fetchPromise;
+    })
+  );
+});
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fast App</title>
+
+  <!-- 1. Preload critical CSS so styles apply immediately -->
+  <link rel="preload" href="./styles.css" as="style" />
+  <link rel="stylesheet" href="./styles.css" />
+
+  <!-- 2. Defer JS so HTML renders before scripts execute -->
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <main id="app">
+    <!-- 3. Lazy-load below-the-fold images -->
+    <img src="./banner.webp" alt="Banner" width="800" height="400" loading="lazy" />
+  </main>
+
+  <!-- 4. Register Service Worker for instant repeat loads -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js");
+      });
+    }
+  </script>
+</body>
+</html>
