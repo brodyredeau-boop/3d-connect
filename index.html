@@ -347,3 +347,39 @@ self.addEventListener("fetch", (event) => {
     navigator.serviceWorker.register("./sw.js");
   }
 </script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // Select every button and button-styled element on the page
+    const buttons = document.querySelectorAll("button, input[type='button'], input[type='submit'], [role='button']");
+
+    buttons.forEach((button, index) => {
+      button.addEventListener("click", (event) => {
+        // Prevent default form reloads unless it's a real submit action
+        if (button.type !== "submit") {
+          event.preventDefault();
+        }
+
+        const label = (button.innerText || button.value || `Button ${index + 1}`).trim();
+        const action = button.dataset.action || label.toLowerCase();
+
+        // Route common button actions automatically
+        if (action.includes("close") || action.includes("cancel")) {
+          const modal = button.closest(".modal, dialog, [role='dialog']");
+          if (modal) modal.style.display = "none";
+        } else if (action.includes("toggle") || action.includes("menu")) {
+          const targetId = button.dataset.target;
+          const target = targetId ? document.getElementById(targetId) : button.nextElementSibling;
+          if (target) target.classList.toggle("hidden");
+        } else if (action.includes("back")) {
+          window.history.back();
+        } else if (action.includes("reset") || action.includes("clear")) {
+          const form = button.closest("form");
+          if (form) form.reset();
+        } else {
+          // Default feedback so you know the button fired
+          console.log(`Clicked: ${label}`);
+        }
+      });
+    });
+  });
+</script>
